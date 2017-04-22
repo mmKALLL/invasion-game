@@ -47,7 +47,7 @@
     
     function drawRotated(img, x, y, degrees) {
       ctx.translate(x, y);
-      ctx.rotate(-(1+degrees)/360 * 2 * Math.PI);
+      ctx.rotate(-(1+degrees)/360 * 2 * Math.PI); // FIXME: TODO: Remove 1+
       ctx.drawImage(img, 0, 0);
       ctx.rotate(degrees/360 * 2 * Math.PI);
       ctx.translate(-x, -y);
