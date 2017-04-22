@@ -23,26 +23,58 @@
 
 (function () {
   
+  /* CONSTANTS */
+  var PATH_IMAGE = "img/";
+  var FPS = 60;
+  
   var canvas = document.getElementById("gameCanvas");
   var ctx = canvas.getContext("2d");
   
-  ctx.beginPath();
-  ctx.rect(0, 0, 2000, 2000);
-  ctx.fillStyle = "#FFFFFF";
-  ctx.fill();
-  ctx.closePath();
+  function update() {
+    
+  }
   
-  ctx.beginPath();
-  ctx.rect(20, 40, 50, 50);
-  ctx.fillStyle = "#FF0000";
-  ctx.fill();
-  ctx.closePath();
+  function draw() {
+    ctx.beginPath();
+    ctx.rect(0, 0, 2000, 2000);
+    ctx.fillStyle = "#FFFFFF";
+    ctx.fill();
+    ctx.closePath();
+    
+    ctx.beginPath();
+    ctx.rect(20, 40, 50, 50);
+    ctx.fillStyle = "#FF0000";
+    ctx.fill();
+    ctx.closePath();
+    
+    ctx.beginPath();
+    ctx.rect(400, 300, 500, 500);
+    ctx.fillStyle = "#FF0000";
+    ctx.fill();
+    ctx.closePath();
+    
+    ctx.drawImage(memebig, 10, 10);
+    ctx.drawImage(memesmall, 20, 20);
+    ctx.drawImage(memesmall_transparent, 30, 30);
+  }
   
-  ctx.beginPath();
-  ctx.rect(400, 300, 500, 500);
-  ctx.fillStyle = "#FF0000";
-  ctx.fill();
-  ctx.closePath();
+  var memebig = new Image();
+  memebig.ready = false;
+  memebig.onload = function () { this.ready = true; };
+  memebig.src = PATH_IMAGE + "memebig.jpg";
+  var memesmall = new Image();
+  memesmall.ready = false;
+  memesmall.onload = function () { this.ready = true; };
+  memesmall.src = PATH_IMAGE + "memesmall.jpg";
+  var memesmall_transparent = new Image();
+  memesmall_transparent.ready = false;
+  memesmall_transparent.onload = function () { this.ready = true; };
+  memesmall_transparent.src = PATH_IMAGE + "memesmall-transparent.jpg";
+
+  setInterval(function() {
+    update();
+    draw();
+  }, 1000/FPS);
   
 /*  function resize() {
    	// Our canvas must cover full height of screen
