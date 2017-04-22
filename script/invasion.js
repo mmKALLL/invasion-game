@@ -19,6 +19,20 @@
  * SOFTWARE.
  * *****************************************************************************/
 
+/* function resize() {
+ 	// Our canvas must cover full height of screen
+ 	// regardless of the resolution
+  var canvas = document.getElementById("gameCanvas");
+ 	var height = window.innerHeight;
+ 	
+ 	// So we need to calculate the proper scaled width
+ 	// that should work well with every resolution
+ 	var ratio = canvas.width/canvas.height;
+ 	var width = height * ratio;
+ 	
+ 	canvas.style.width = width+'px';
+ 	canvas.style.height = height+'px';*/
+
 (function () {
   
   var canvas = document.getElementById("gameCanvas");
