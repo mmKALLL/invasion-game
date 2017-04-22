@@ -1,0 +1,19 @@
+{
+  "name": "invasion-game",
+  "version": "1.0",
+
+
+  "eslintConfig": {
+    
+    "root": true,
+    
+    "env": {
+      "browser": true
+    },
+
+    "rules": {
+      "quotes": ["warn", "double"],
+      "semi": "warn"
+    }
+  }
+}

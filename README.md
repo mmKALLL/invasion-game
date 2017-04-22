@@ -1,2 +1,5 @@
-# invasion-game
-A small game project made in JS for Ludum Dare 38.
+# Invasion
+
+A simple game about defending your planet and escaping solitude.
+
+Made within the span of 48 hours during the Ludum Dare 38 event.
