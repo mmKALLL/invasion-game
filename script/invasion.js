@@ -47,7 +47,7 @@
     
     function drawRotated(img, x, y, degrees) {
       ctx.translate(x, y);
-      ctx.rotate(-degrees/360 * 2 * Math.PI);
+      ctx.rotate(-(1+degrees)/360 * 2 * Math.PI);
       ctx.drawImage(img, 0, 0);
       ctx.rotate(degrees/360 * 2 * Math.PI);
       ctx.translate(-x, -y);
@@ -80,7 +80,7 @@
     ctx.closePath();
     
     // foreground (particle effects, etc)
-    drawRotated(images.beam1, 200, 100, -30);
+    drawRotated(images.beam1, 300, 100, -30);
   }
   
   // Returns true if adding to images object was a success, false otherwise.
