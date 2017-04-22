@@ -24,22 +24,48 @@
 (function () {
   
   /* CONSTANTS */
-  var PATH_IMAGE = "img/";
+  var IMAGE_PATH = "img/";
   var FPS = 60;
+  
+  var gameStatus = {
+    ready: false,
+    get isReady() { return this.ready; },
+    
+  };
   
   var canvas = document.getElementById("gameCanvas");
   var ctx = canvas.getContext("2d");
+  var images = {};
+  
+  startGame();
   
   function update() {
     
   }
   
   function draw() {
+    
+    function drawRotated(img, x, y, degrees) {
+      ctx.translate(x, y);
+      ctx.rotate(-degrees/360 * 2 * Math.PI);
+      ctx.drawImage(img, 0, 0);
+      ctx.rotate(degrees/360 * 2 * Math.PI);
+      ctx.translate(-x, -y);
+    }
+    
+    // background
     ctx.beginPath();
     ctx.rect(0, 0, 2000, 2000);
     ctx.fillStyle = "#FFFFFF";
     ctx.fill();
     ctx.closePath();
+
+    ctx.drawImage(images.space_big, 0, 0);
+    ctx.drawImage(images.planet, 650 / 2 - 65, 650 / 2 - 65);
+    
+    
+    // objects (characters, enemies, etc)
+    ctx.drawImage(images.blob_s1, 650 / 2 - 65, 650 / 2 - 65 - images.blob_s1.height);
     
     ctx.beginPath();
     ctx.rect(20, 40, 50, 50);
@@ -48,90 +74,72 @@
     ctx.closePath();
     
     ctx.beginPath();
-    ctx.rect(400, 300, 500, 500);
+    ctx.rect(500, 600, 500, 500);
     ctx.fillStyle = "#FF0000";
     ctx.fill();
     ctx.closePath();
     
-    ctx.drawImage(memebig, 10, 10);
-    ctx.drawImage(memesmall, 20, 20);
-    ctx.drawImage(memesmall_transparent, 30, 30);
+    // foreground (particle effects, etc)
+    drawRotated(images.beam1, 200, 100, -30);
   }
   
-  var memebig = new Image();
-  memebig.ready = false;
-  memebig.onload = function () { this.ready = true; };
-  memebig.src = PATH_IMAGE + "memebig.jpg";
-  var memesmall = new Image();
-  memesmall.ready = false;
-  memesmall.onload = function () { this.ready = true; };
-  memesmall.src = PATH_IMAGE + "memesmall.jpg";
-  var memesmall_transparent = new Image();
-  memesmall_transparent.ready = false;
-  memesmall_transparent.onload = function () { this.ready = true; };
-  memesmall_transparent.src = PATH_IMAGE + "memesmall-transparent.jpg";
-
-  setInterval(function() {
-    update();
-    draw();
-  }, 1000/FPS);
-  
-/*  function resize() {
-   	// Our canvas must cover full height of screen
-   	// regardless of the resolution
-    var canvas = document.getElementById("gameCanvas");
-   	var height = window.innerHeight;
-   	
-   	// So we need to calculate the proper scaled width
-   	// that should work well with every resolution
-   	var ratio = canvas.width/canvas.height;
-   	var width = height * ratio;
-   	
-    canvas.style.height = height+"px";
-   	canvas.style.width = width+"px";
+  // Returns true if adding to images object was a success, false otherwise.
+  function loadImage(filename) {
+    if (!images.filename) {
+      var img = new Image();
+      img.ready = false;
+      img.onload = function () { img.ready = true; };
+      img.src = IMAGE_PATH + filename;
+      images[filename.slice(0, -4)] = img;
+      return true;
+    } else {
+      return false;
+    }
   }
-  window.addEventListener("resize", resize, false);*/
   
-/*
-  var player = {
-    forwardSteps: 0,
-    backwardSteps: 0,
-    get totalSteps() { return this.forwardSteps + this.backwardSteps; },
-    get position() { return this.forwardSteps - this.backwardSteps; },
+  function startGame() {
+    // First some preparations:
+    
+    // Load images
+    (function () {
+      loadImage("planet.png");
+      loadImage("space_big.png");
+      loadImage("blob_s1.png");
+      loadImage("blob_s2.png");
+      loadImage("beam1.png");
+    })();
 
-    stepForward: function() {
-      player.forwardSteps += 1;
-      if (player.totalSteps <= 1)
-        messagebox.pushMessage("You have taken your first step!");
-      else messagebox.pushMessage("You have taken a step " + player.totalSteps + " times!");
-      updateStatus();
-    },
+    
+    function checkAssets() {
+      console.log("hi" + images);
+      if (gameStatus.ready) {
+        var key;
+        for (key in images) {
+          if (!images[key].ready) {
+            return 0;
+          }
+        }
 
-    stepBackward: function() {
-      player.backwardSteps += 1;
-      if (player.backwardSteps <= 1)
-        messagebox.pushMessage("You took a step back!");
-      else messagebox.pushMessage("You have taken a step back " + player.backwardSteps + " times!");
-      updateStatus();
-    },
+        window.setInterval(function() {
+          update();
+          draw();
+        }, 1000/FPS);
+        window.clearInterval(intervalID);
+      }
+    }
+    
+    
+    // Set up the game logic
+    gameStatus.player = {}; // TODO
+    
+    gameStatus.ready = true;
+    
+    // Check that the assets are ready and launch the game
+    var intervalID = window.setInterval(function () {
+      checkAssets();
+    }, 200);
 
-  };
-
-
-  var messagebox = {
-    elem: document.getElementById("messageBox"),
-    pushMessage: function(string) { this.elem.innerHTML = string + "<br>" + this.elem.innerHTML; },
-  };
-
-  function updateStatus() {
-    var elem = document.getElementById("statusArea");
-    elem.innerHTML =  "You have taken " + player.totalSteps + " steps.<br>" +
-                      "Your current position is " + player.position + ".<br>";
-
+    
   }
-
-  updateStatus();
-  document.getElementById("stepForwardButton").addEventListener("click", player.stepForward);
-  document.getElementById("stepBackwardButton").addEventListener("click", player.stepBackward);
-*/
+  
 })();
