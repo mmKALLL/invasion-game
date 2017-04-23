@@ -30,7 +30,7 @@
   var FPS = 60;
   var SHOT_ACTIVE_FRAMES = 1;
   var SHOT_VISUAL_FRAMES = 65;
-  var SHOT_COOLDOWN = 0;
+  var SHOT_COOLDOWN = 130;
   var SHOT_DAMAGE = 100;
   var PLANET_MAX_HP = 1000;
   var BG_SPIN_SPEED = 0.03;
@@ -51,7 +51,7 @@
     gameFrame: 0,
     timeSinceLastFire: 0,
     get readyToFire() { return (this.timeSinceLastFire - SHOT_COOLDOWN) >= 0; },
-    audioVolume: 0.6,
+    sfxVolume: 0.25,
   };
   var activeShots = [];
   var activeEnemies = [];
@@ -118,7 +118,13 @@
     
     
     // objects (characters, enemies, etc)
-    ctx.drawImage(images.blob_s1, 650 / 2 - images.blob_s1.width / 2, 650 / 2 - 62 - images.blob_s1.height / 2);
+    
+    // idle animated blob_s
+    if (gameStatus.gameFrame % 60 < 30) {
+      ctx.drawImage(images.blob_s1, 650 / 2 - images.blob_s1.width / 2, 650 / 2 - 65 - images.blob_s1.height / 2);
+    } else {
+      ctx.drawImage(images.blob_s2, 650 / 2 - images.blob_s2.width / 2, 650 / 2 - 65 - images.blob_s2.height / 2);
+    }
 
     // Center marker
     ctx.beginPath();
@@ -130,7 +136,7 @@
     // foreground (particle effects, etc)
     var i;
     for (i = 0; i < activeShots.length; i += 1) {
-      console.log(activeShots[i].targetY, activeShots[i].targetX);
+      //console.log(activeShots[i].targetY, activeShots[i].targetX);
       ctx.save();
       if (activeShots[i].animationStyle === "fade") {
         ctx.globalAlpha = 1 - (activeShots[i].activeSince * 1.0 / activeShots[i].visibleUntil);
@@ -162,7 +168,7 @@
       var snd = new Audio(SOUND_PATH + filename);
       snd.ready = false;
       snd.addEventListener("canplaythrough", function () { snd.ready = true; });
-      snd.volume = gameStatus.audioVolume;
+      snd.volume = gameStatus.sfxVolume;
       sounds[filename.slice(0, -4)] = snd;
       return true;
     } else {
@@ -170,8 +176,8 @@
     }
   }
   
-  function changeAudioVolume(newVolume) {
-    gameStatus.audioVolume = newVolume;
+  function changesfxVolume(newVolume) {
+    gameStatus.sfxVolume = newVolume;
     for (key in sounds) {
       sounds[key].volume = newVolume;
     }
@@ -195,8 +201,10 @@
       });
       
       if (RANDOM_LASERSHOT_SOUND) {
-        console.log("lasershot" + (Math.floor(Math.random() * 4) + 1));
-        sounds["lasershot" + (Math.floor(Math.random() * 4) + 1)].cloneNode(true).play();
+        var name = "lasershot" + (Math.floor(Math.random() * 4) + 1);
+        var snd = sounds[name].cloneNode(true);
+        snd.volume = sounds[name].volume; // JS attributes not copied on cloneNode; need to set manually
+        snd.play();
       } else {
         sounds.lasershot1.cloneNode(true).play();
       }
