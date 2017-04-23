@@ -72,7 +72,7 @@
         gameStatus.energy = Math.min(gameStatus.maxEnergy, gameStatus.energy + gameStatus.energyChargeRate);
       }
       gameStatus.enemySpawnCounter += gameStatus.enemySpawnSpeed;
-      console.log(gameStatus.enemySpawnCounter);
+      //console.log(gameStatus.enemySpawnCounter);
       if (gameStatus.waveEnemiesLeft > 0 && gameStatus.enemySpawnCounter >= 1.0) {
         gameStatus.enemySpawnCounter -= 1.0;
         gameStatus.waveEnemiesLeft -= 1;
@@ -123,9 +123,10 @@
       enemy.y -= enemy.speed * Math.sin(angle);
       
       // if inside planet
-      if (enemy.x > 325-65 && enemy.x < 325+65 && enemy.y > 325-65 && activeEnemies.y < 325+65) {
+      if (enemy.x > 325-65 && enemy.x < 325+65 && enemy.y > 325-65 && enemy.y < 325+65) {
         gameStatus.planetHP -= enemy.damage;
         activeEnemies = activeEnemies.slice(0, i).concat(activeEnemies.slice(i + 1, activeEnemies.length));
+        i -= 1;
       }
     }
   }
