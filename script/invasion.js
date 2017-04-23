@@ -111,18 +111,6 @@
   function drawLevelup() {
     
   }
-
-  // Helper function for drawing things rotated by some amount of degrees
-  function drawRotated(img, x, y, degrees, dx, dy) {
-    if (!dx || !dy) {
-      dx = 0; dy = 0;
-    }
-    ctx.translate(x, y);
-    ctx.rotate(-(degrees)/360 * 2 * Math.PI);
-    ctx.drawImage(img, dx, dy);
-    ctx.rotate(degrees/360 * 2 * Math.PI);
-    ctx.translate(-x, -y);
-  }
   
   function drawBackground() {
     // background
@@ -150,13 +138,53 @@
   }
   
   function drawActiveEnemies() {
-    
+    var i;
+    for (i = 0; i < activeEnemies.length; i += 1) {
+      //console.log(activeShots[i].targetY, activeShots[i].targetX);
+      ctx.save();
+      if (activeEnemies[i].animationStyle === "rotate") {
+        drawRotated(activeEnemies[i].image,
+            activeEnemies[i].x - activeEnemies[i].image.width / 2,
+            activeEnemies[i].y - activeEnemies[i].image.height / 2,
+            gameStatus.gameFrame % 360);
+      } else {
+        drawImage(activeEnemies[i].image,
+            activeEnemies[i].x - activeEnemies[i].image.width / 2,
+            activeEnemies[i].y - activeEnemies[i].image.height / 2);
+      }
+
+      ctx.restore();
+    }
   }
   
   function drawActiveShots() {
-    
+    var i;
+    for (i = 0; i < activeShots.length; i += 1) {
+      //console.log(activeShots[i].targetY, activeShots[i].targetX);
+      ctx.save();
+      if (activeShots[i].animationStyle === "fade") {
+        ctx.globalAlpha = 1 - (activeShots[i].activeSince * 1.0 / activeShots[i].visibleUntil);
+      }
+      var angle = Math.atan2(activeShots[i].originY - activeShots[i].targetY, activeShots[i].targetX - activeShots[i].originX);
+      drawRotated(activeShots[i].image, activeShots[i].originX - (13 * Math.sin(angle)), activeShots[i].originY - (13 * Math.cos(angle)),
+          360*angle/(2*Math.PI),
+          0, 0);
+      ctx.restore();
+    }
   }
   
+  // Helper function for drawing things rotated by some amount of degrees
+  function drawRotated(img, x, y, degrees, dx, dy) {
+    if (!dx || !dy) {
+      dx = 0; dy = 0;
+    }
+    ctx.translate(x, y);
+    ctx.rotate(-(degrees)/360 * 2 * Math.PI);
+    ctx.drawImage(img, dx, dy);
+    ctx.rotate(degrees/360 * 2 * Math.PI);
+    ctx.translate(-x, -y);
+  }
+    
   function drawIngame() {
     
     drawBackground();
@@ -165,25 +193,15 @@
     drawBlobIdle();
 
     // Center marker
-    ctx.beginPath();
-    ctx.rect(320, 320, 10, 10);
-    ctx.fillStyle = "#FF0000";
-    ctx.fill();
-    ctx.closePath();
+    //ctx.beginPath();
+    //ctx.rect(320, 320, 10, 10);
+    //ctx.fillStyle = "#FF0000";
+    //ctx.fill();
+    //ctx.closePath();
     
     // foreground (particle effects, etc)
-    var i;
-    for (i = 0; i < activeShots.length; i += 1) {
-      //console.log(activeShots[i].targetY, activeShots[i].targetX);
-      ctx.save();
-      if (activeShots[i].animationStyle === "fade") {
-        ctx.globalAlpha = 1 - (activeShots[i].activeSince * 1.0 / activeShots[i].visibleUntil);
-      }
-      drawRotated(activeShots[i].image, activeShots[i].originX, activeShots[i].originY - 10,
-          360*Math.atan2(activeShots[i].originY - activeShots[i].targetY, activeShots[i].targetX - activeShots[i].originX)/(2*Math.PI),
-          0, -10);
-      ctx.restore();
-    }
+    drawActiveShots();
+    drawActiveEnemies();
   }
   
   // Returns true if adding to images object was a success, false otherwise.
@@ -228,7 +246,7 @@
       var canvasPosition = canvas.getBoundingClientRect();
       activeShots.push({
         originX: 325,
-        originY: 325,
+        originY: 325 - 66,
         targetX: event.clientX - canvasPosition.left,
         targetY: event.clientY - canvasPosition.top,
         activeSince: 0,
@@ -323,7 +341,7 @@
       
     };
     
-    gameStatus.state = "mainmenu";
+    gameStatus.state = "ingame";
     
     window.addEventListener("click", handleMouseClick);
     window.addEventListener("mousemove", handleMouseMove);
