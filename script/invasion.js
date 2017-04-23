@@ -118,7 +118,7 @@
     
     
     // objects (characters, enemies, etc)
-    ctx.drawImage(images.blob_s1, 650 / 2 - images.blob_s1.width / 2, 650 / 2 - images.blob_s1.height / 2);
+    ctx.drawImage(images.blob_s1, 650 / 2 - images.blob_s1.width / 2, 650 / 2 - 62 - images.blob_s1.height / 2);
 
     // Center marker
     ctx.beginPath();
