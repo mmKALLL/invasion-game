@@ -28,11 +28,6 @@
   var IMAGE_PATH = "img/";
   var SOUND_PATH = "sound/";
   var FPS = 60;
-  var SHOT_ACTIVE_FRAMES = 1;
-  var SHOT_VISUAL_FRAMES = 65;
-  var SHOT_COOLDOWN = 130;
-  var SHOT_DAMAGE = 100;
-  var PLANET_MAX_HP = 1000;
   var BG_SPIN_SPEED = 0.03;
   var RANDOM_LASERSHOT_SOUND = true;
   
@@ -48,11 +43,11 @@
   var gameStatus = {
     ready: false,
     get isReady() { return this.ready; },
+    sfxVolume: 0.35,
     gameFrame: 0,
-    timeSinceLastFire: 0,
-    get readyToFire() { return (this.timeSinceLastFire - SHOT_COOLDOWN) >= 0; },
-    sfxVolume: 0.25,
+    state: "mainmenu",
   };
+  
   var activeShots = [];
   var activeEnemies = [];
   
@@ -81,7 +76,7 @@
     }
     
     if (mouseButtonDown) {
-      handleMouseClick({
+      handleMouseHold({
         clientX: mouseLastX,
         clientY: mouseLastY,
       });
@@ -94,18 +89,42 @@
   }
   
   function draw() {
-    
-    function drawRotated(img, x, y, degrees, dx, dy) {
-      if (!dx || !dy) {
-        dx = 0; dy = 0;
-      }
-      ctx.translate(x, y);
-      ctx.rotate(-(degrees)/360 * 2 * Math.PI);
-      ctx.drawImage(img, dx, dy);
-      ctx.rotate(degrees/360 * 2 * Math.PI);
-      ctx.translate(-x, -y);
+    if (gameStatus.state === "ingame") {
+      drawIngame();
+    } else if (gameStatus.state === "mainmenu") {
+      drawMainMenu();
+    } else if (gameStatus.state === "paused") {
+      drawPauseScreen();
+    } else if (gameStatus.state === "levelup") {
+      drawLevelup();
     }
+  }
+  
+  function drawMainMenu() {
     
+  }
+  
+  function drawPauseScreen() {
+    // TODO
+  }
+  
+  function drawLevelup() {
+    
+  }
+
+  // Helper function for drawing things rotated by some amount of degrees
+  function drawRotated(img, x, y, degrees, dx, dy) {
+    if (!dx || !dy) {
+      dx = 0; dy = 0;
+    }
+    ctx.translate(x, y);
+    ctx.rotate(-(degrees)/360 * 2 * Math.PI);
+    ctx.drawImage(img, dx, dy);
+    ctx.rotate(degrees/360 * 2 * Math.PI);
+    ctx.translate(-x, -y);
+  }
+  
+  function drawBackground() {
     // background
     ctx.beginPath();
     ctx.rect(0, 0, 2000, 2000);
@@ -115,16 +134,35 @@
 
     drawRotated(images.space_big, 325, 325, gameStatus.gameFrame * BG_SPIN_SPEED, -675, -675);
     ctx.drawImage(images.planet, 650 / 2 - 105, 650 / 2 - 105);
-    
-    
-    // objects (characters, enemies, etc)
-    
+  }
+  
+  function drawBlobIdle() {
     // idle animated blob_s
     if (gameStatus.gameFrame % 60 < 30) {
       ctx.drawImage(images.blob_s1, 650 / 2 - images.blob_s1.width / 2, 650 / 2 - 65 - images.blob_s1.height / 2);
     } else {
       ctx.drawImage(images.blob_s2, 650 / 2 - images.blob_s2.width / 2, 650 / 2 - 65 - images.blob_s2.height / 2);
     }
+  }
+  
+  function drawActiveShots() {
+    
+  }
+  
+  function drawActiveEnemies() {
+    
+  }
+  
+  function drawActiveShots() {
+    
+  }
+  
+  function drawIngame() {
+    
+    drawBackground();
+    
+    // objects (characters, enemies, etc)
+    drawBlobIdle();
 
     // Center marker
     ctx.beginPath();
@@ -176,7 +214,7 @@
     }
   }
   
-  function changesfxVolume(newVolume) {
+  function changeSfxVolume(newVolume) {
     gameStatus.sfxVolume = newVolume;
     for (key in sounds) {
       sounds[key].volume = newVolume;
@@ -185,6 +223,7 @@
   
   // Mouse event handler. Shoot things if ingame, otherwise control menus.
   function handleMouseClick(event) {
+    
     if (gameStatus.state === "ingame" && gameStatus.readyToFire) {
       var canvasPosition = canvas.getBoundingClientRect();
       activeShots.push({
@@ -193,9 +232,9 @@
         targetX: event.clientX - canvasPosition.left,
         targetY: event.clientY - canvasPosition.top,
         activeSince: 0,
-        activeFrames: SHOT_ACTIVE_FRAMES,
-        damage: SHOT_DAMAGE,
-        visibleUntil: SHOT_VISUAL_FRAMES,
+        activeFrames: gameStatus.shotActiveFrames,
+        damage: gameStatus.shotDamage,
+        visibleUntil: gameStatus.shotVisualFrames,
         animationStyle: "fade",
         image: images.beam1,
       });
@@ -215,6 +254,12 @@
   function handleMouseMove(event) {
     mouseLastX = event.clientX;
     mouseLastY = event.clientY;
+  }
+  
+  function handleMouseHold(event) {
+    if (gameStatus.state === "ingame") {
+      handleMouseClick(event);
+    }
   }
   
   function startGame() {
@@ -256,11 +301,29 @@
       }
     }
     
-    
     // Set up the game logic
-    gameStatus.player = {}; // TODO
-    gameStatus.timeSinceLastFire = 0;
-    gameStatus.state = "ingame";
+    gameStatus = {
+      ready: false,
+      get isReady() { return this.ready; },
+      sfxVolume: 0.35,
+      
+      gameFrame: 0,
+      timeSinceLastFire: 999,
+      get readyToFire() { return (this.timeSinceLastFire - this.shotCooldown) >= 0; },
+      
+      // player stats and shot properties
+      energy: 100,
+      maxEnergy: 100,
+      energyChargeRate: 0.5,
+      shotActiveFrames: 1,
+      shotVisualFrames: 65,
+      shotCooldown: 120,
+      shotDamage: 100,
+      planetMaxHP: 1000,
+      
+    };
+    
+    gameStatus.state = "mainmenu";
     
     window.addEventListener("click", handleMouseClick);
     window.addEventListener("mousemove", handleMouseMove);
