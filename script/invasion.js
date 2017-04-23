@@ -30,6 +30,7 @@
   var FPS = 60;
   var BG_SPIN_SPEED = 0.03;
   var RANDOM_LASERSHOT_SOUND = true;
+  var HARD_MODE = false;
   
   var mouseButtonDown = 0;
   var mouseLastX = 0, mouseLastY = 0;
@@ -61,7 +62,9 @@
   function update() {
     gameStatus.timeSinceLastFire += 1;
     gameStatus.gameFrame += 1;
-    
+    if (gameStatus.energy <= gameStatus.maxEnergy) {
+      gameStatus.energy += gameStatus.energyChargeRate;
+    }
     var i;
     for (i = 0; i < activeShots.length; i += 1) {
       activeShots[i].activeSince += 1;
@@ -101,7 +104,8 @@
   }
   
   function drawMainMenu() {
-    
+    drawBackground();
+    drawTitle();
   }
   
   function drawPauseScreen() {
@@ -110,6 +114,11 @@
   
   function drawLevelup() {
     
+  }
+  
+  function drawTitle() {
+    ctx.drawImage(images.titleimage, 650 / 2 - images.titleimage.width / 2, 100);
+    ctx.drawImage(images.playbutton, 650 / 2 - images.playbutton.width / 2, 500);
   }
   
   function drawBackground() {
@@ -241,8 +250,10 @@
   
   // Mouse event handler. Shoot things if ingame, otherwise control menus.
   function handleMouseClick(event) {
-    
-    if (gameStatus.state === "ingame" && gameStatus.readyToFire) {
+    if (gameStatus.state === "mainmenu") {
+      gameStatus.state = "ingame";
+    }
+    else if (gameStatus.state === "ingame" && gameStatus.readyToFire) {
       var canvasPosition = canvas.getBoundingClientRect();
       activeShots.push({
         originX: 325,
@@ -266,6 +277,7 @@
         sounds.lasershot1.cloneNode(true).play();
       }
       gameStatus.timeSinceLastFire = 0;
+      gameStatus.energy = 0;
     }
   }
   
@@ -289,6 +301,8 @@
     loadImage("blob_s1.png");
     loadImage("blob_s2.png");
     loadImage("beam1.png");
+    loadImage("titleimage.png");
+    loadImage("playbutton.png");
     
     loadSound("lasershot1.wav");
     loadSound("lasershot2.wav");
@@ -327,21 +341,33 @@
       
       gameFrame: 0,
       timeSinceLastFire: 999,
-      get readyToFire() { return (this.timeSinceLastFire - this.shotCooldown) >= 0; },
+      get readyToFire() { return (this.timeSinceLastFire - this.shotCooldown) >= 0 && this.energy === this.maxEnergy; },
       
       // player stats and shot properties
       energy: 100,
       maxEnergy: 100,
-      energyChargeRate: 0.5,
+      get energyChargeRate() { return 0.5 + this.energyChargeRatePerLevel * this.energyChargeRateLevel; },
       shotActiveFrames: 1,
       shotVisualFrames: 65,
-      shotCooldown: 120,
+      shotCooldown: 5,
       shotDamage: 100,
       planetMaxHP: 1000,
       
+      // game progression and level up increases
+      wave: 1,
+      waveEnemiesLeft: 8,
+      newWaveEnemies: function() {},
+      enemySpawnSpeed: HARD_MODE ? 0.002 : 0.001,
+      
+      energyChargeRateLevel: 1,
+      shotDamageLevel: 1,
+      planetMaxHPLevel: 1,
+      energyChargeRatePerLevel: HARD_MODE ? 0.05 : 0.10,
+      shotDamagePerLevel: HARD_MODE ? 5 : 10,
+      planetMaxHPPerLevel: HARD_MODE ? 80 : 150,
     };
     
-    gameStatus.state = "ingame";
+    gameStatus.state = "mainmenu";
     
     window.addEventListener("click", handleMouseClick);
     window.addEventListener("mousemove", handleMouseMove);
