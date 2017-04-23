@@ -153,7 +153,7 @@
   
   function drawLevelup() {
     drawBackground();
-    drawImage(images.levelup, 0, 0);
+    ctx.drawImage(images.levelup, 0, 0);
   }
   
   function drawTitle() {
@@ -395,8 +395,8 @@
       shotActiveFrames: 1,
       shotVisualFrames: 65,
       shotCooldown: 5,
-      shotDamage: 100,
-      planetMaxHP: 1000,
+      get shotDamage() { return 100 + this.shotDamageLevel * this.shotDamagePerLevel; },
+      get planetMaxHP() { return 1000 + this.planetMaxHPLevel * this.planetMaxHPPerLevel; },
       
       // game progression and level up increases
       wave: 1,
