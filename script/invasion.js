@@ -95,6 +95,8 @@
       }
     }
     
+    moveEnemies();
+    
     if (mouseButtonDown) {
       handleMouseHold({
         clientX: mouseLastX,
@@ -107,6 +109,25 @@
   // collision checks
   function checkShotTargets(shot) {
     // TODO
+    // remove enemy from activeEnemies
+  }
+  
+  function moveEnemies() {
+    // Do movement and check collisions with planet.
+    var i;
+    for (i = 0; i < activeEnemies.length; i += 1) {
+      
+      var enemy = activeEnemies[i];
+      var angle = Math.atan2(enemy.y - 325, enemy.x - 325);
+      enemy.x -= enemy.speed * Math.cos(angle);
+      enemy.y -= enemy.speed * Math.sin(angle);
+      
+      // if inside planet
+      if (enemy.x > 325-65 && enemy.x < 325+65 && enemy.y > 325-65 && activeEnemies.y < 325+65) {
+        gameStatus.planetHP -= enemy.damage;
+        activeEnemies = activeEnemies.slice(0, i).concat(activeEnemies.slice(i + 1, activeEnemies.length));
+      }
+    }
   }
   
   // wave completion
@@ -118,11 +139,33 @@
     activeShots = [];
     activeEnemies = [];
     gs.state = "levelup";
-    console.log("wave clear, should be levelup: " + gameStatus.state);
+    console.log("wave " + gs.wave + " clear, should be levelup: " + gameStatus.state); // works fine
+  }
+  
+  function handleLevelUp(selection) {
+    if (selection === 0) {
+      gameStatus.shotDamageLevel += 1;
+    } else if (selection === 1) {
+      gameStatus.energyChargeRateLevel += 1;
+    } else if (selection === 2) {
+      gameStatus.planetMaxHPLevel += 1;
+    }
+    console.log("selection: " + selection + ", shotDamageLevel: " + gameStatus.shotDamageLevel +
+        ", e-chargeLevel: " + gameStatus.energyChargeRateLevel + ", planetHPLevel: " + gameStatus.planetMaxHPLevel);
+    gameStatus.planetHP = gameStatus.planetMaxHP;
   }
   
   function spawnEnemy() {
-    // TODO
+    var side = Math.floor(Math.random() * 4); // top right bottom left
+    activeEnemies.push({
+      image: images.enemy,
+      animationStyle: "planetcentered",
+      damage: gameStatus.enemyDamage,
+      HP: gameStatus.enemyDefaultHP,
+      speed: gameStatus.enemySpeed,
+      x: ((side == 0 || side == 2) ? Math.random()*700 - 25 : (side == 1 ? 675 : -25)),
+      y: ((side == 1 || side == 3) ? Math.random()*700 - 25 : (side == 2 ? 675 : -25)),
+    });
     console.log("spawn enemy");
   }
   
@@ -192,6 +235,11 @@
             activeEnemies[i].x - activeEnemies[i].image.width / 2,
             activeEnemies[i].y - activeEnemies[i].image.height / 2,
             gameStatus.gameFrame % 360);
+      } else if (activeEnemies[i].animationStyle === "planetcentered") {
+        drawRotated(activeEnemies[i].image,
+            activeEnemies[i].x - activeEnemies[i].image.width / 2,
+            activeEnemies[i].y - activeEnemies[i].image.height / 2,
+            -90 + 180/Math.PI * Math.atan2(325 - activeEnemies[i].y, activeEnemies[i].x - 325));
       } else {
         drawImage(activeEnemies[i].image,
             activeEnemies[i].x - activeEnemies[i].image.width / 2,
@@ -314,6 +362,9 @@
       gameStatus.timeSinceLastFire = 0;
       gameStatus.energy = 0;
     }
+    else if (gameStatus.state === "levelup") {
+      // TODO
+    }
   }
   
   function handleMouseMove(event) {
@@ -397,6 +448,7 @@
       shotCooldown: 5,
       get shotDamage() { return 100 + this.shotDamageLevel * this.shotDamagePerLevel; },
       get planetMaxHP() { return 1000 + this.planetMaxHPLevel * this.planetMaxHPPerLevel; },
+      planetHP: 1000,
       
       // game progression and level up increases
       wave: 1,
@@ -405,14 +457,14 @@
       get newWaveEnemies() { return (8 + (this.wave - 1) * (HARD_MODE ? 3 : 2)); },
       get enemySpawnSpeed() { return (0.005 + (this.wave * (HARD_MODE ? 0.002 : 0.001))); },
       get enemyDefaultHP() { return (80 + (this.wave * (HARD_MODE ? 20 : 10))); },
-      get enemySpeed() { return (3.0 + (this.wave * (HARD_MODE ? 0.4 : 0.3))) ; },
+      get enemySpeed() { return (0.8 + (this.wave * (HARD_MODE ? 0.3 : 0.2))) ; },
       
       energyChargeRateLevel: 1,
       shotDamageLevel: 1,
       planetMaxHPLevel: 1,
       energyChargeRatePerLevel: HARD_MODE ? 0.10 : 0.25,
       shotDamagePerLevel: HARD_MODE ? 5 : 10,
-      planetMaxHPPerLevel: HARD_MODE ? 80 : 150,
+      planetMaxHPPerLevel: HARD_MODE ? 150 : 250,
     };
     
     gameStatus.state = "mainmenu";

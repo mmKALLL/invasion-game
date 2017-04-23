@@ -10,6 +10,10 @@ html, body {
   margin: 0 0 0 0;
 }
 
+progress {
+  position: absolute;
+}
+
 #root {
   display: block;
   position: relative;
