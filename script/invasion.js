@@ -23,7 +23,7 @@
 
 (function () {
   
-  /* CONSTANTS */
+  /* CONSTANTS AND SETUP */
   var CONSOLE_DEBUG = true;
   var IMAGE_PATH = "img/";
   var SOUND_PATH = "sound/";
@@ -57,7 +57,11 @@
   var images = {};
   var sounds = {};
   
-  startGame();
+  startGame(); // Starts the game at the title screen.
+  
+  
+  
+  // GAME LOOP //
   
   function update() {
     gameStatus.timeSinceLastFire += 1;
@@ -90,6 +94,10 @@
   function checkShotTargets(shot) {
     // TODO
   }
+  
+  
+  
+  // DRAWING //
   
   function draw() {
     if (gameStatus.state === "ingame") {
@@ -213,6 +221,11 @@
     drawActiveEnemies();
   }
   
+  
+  
+  
+  // HELPER FUNCTIONS //
+  
   // Returns true if adding to images object was a success, false otherwise.
   function loadImage(filename) {
     if (!images[filename.slice(0, -4)]) {
@@ -291,6 +304,11 @@
       handleMouseClick(event);
     }
   }
+  
+  
+  
+  
+  // GAME START HANDLER //
   
   function startGame() {
     // First some preparations:
