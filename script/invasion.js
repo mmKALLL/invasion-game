@@ -34,6 +34,7 @@
   
   var mouseButtonDown = 0;
   var mouseLastX = 0, mouseLastY = 0;
+  var mouseLastCanvasX = 0, mouseLastCanvasY = 0;
   document.body.onmousedown = function() {
     ++mouseButtonDown;
   };
@@ -64,16 +65,20 @@
   // GAME LOOP //
   
   function update() {
+    gameStatus.gameFrame += 1;
     if (gameStatus.state == "ingame") {
       gameStatus.timeSinceLastFire += 1;
-      gameStatus.gameFrame += 1;
       if (gameStatus.energy < gameStatus.maxEnergy) {
         gameStatus.energy = Math.min(gameStatus.maxEnergy, gameStatus.energy + gameStatus.energyChargeRate);
       }
       gameStatus.enemySpawnCounter += gameStatus.enemySpawnSpeed;
-      if (gameStatus.enemySpawnCounter >= 1.0) {
+      console.log(gameStatus.enemySpawnCounter);
+      if (gameStatus.waveEnemiesLeft > 0 && gameStatus.enemySpawnCounter >= 1.0) {
         gameStatus.enemySpawnCounter -= 1.0;
+        gameStatus.waveEnemiesLeft -= 1;
         spawnEnemy();
+      } else if (gameStatus.waveEnemiesLeft == 0 && activeEnemies.length == 0) {
+        handleWaveClear();
       }
     }
     
@@ -109,11 +114,11 @@
     var gs = gameStatus;
     gs.enemySpawnCounter = 0.0;
     gs.wave += 1;
-    gs.waveEnemiesLeft = gs.newWaveEnemies();
+    gs.waveEnemiesLeft = gs.newWaveEnemies;
     activeShots = [];
     activeEnemies = [];
     gs.state = "levelup";
-    gameStatus = gs;
+    console.log("wave clear, should be levelup: " + gameStatus.state);
   }
   
   function spawnEnemy() {
@@ -147,7 +152,8 @@
   }
   
   function drawLevelup() {
-    
+    drawBackground();
+    drawImage(images.levelup, 0, 0);
   }
   
   function drawTitle() {
@@ -313,6 +319,8 @@
   function handleMouseMove(event) {
     mouseLastX = event.clientX;
     mouseLastY = event.clientY;
+    mouseLastCanvasX = event.clientX - canvas.getBoundingClientRect().left;
+    mouseLastCanvasY = event.clientY - canvas.getBoundingClientRect().top;
   }
   
   function handleMouseHold(event) {
@@ -338,6 +346,7 @@
     loadImage("enemy.png");
     loadImage("boss.png");
     loadImage("titleimage.png");
+    loadImage("levelup.png");
     loadImage("playbutton.png");
     
     loadSound("lasershot1.wav");
@@ -391,10 +400,12 @@
       
       // game progression and level up increases
       wave: 1,
-      firstWaveEnemies: 8,
+      waveEnemiesLeft: 8,
       enemySpawnCounter: 0.0,
-      get newWaveEnemies() { return 8 + (this.wave - 1) * (HARD_MODE ? 3 : 2); },
-      get enemySpawnSpeed() { return 0.005 + this.wave * HARD_MODE ? 0.002 : 0.001; },
+      get newWaveEnemies() { return (8 + (this.wave - 1) * (HARD_MODE ? 3 : 2)); },
+      get enemySpawnSpeed() { return (0.005 + (this.wave * (HARD_MODE ? 0.002 : 0.001))); },
+      get enemyDefaultHP() { return (80 + (this.wave * (HARD_MODE ? 20 : 10))); },
+      get enemySpeed() { return (3.0 + (this.wave * (HARD_MODE ? 0.4 : 0.3))) ; },
       
       energyChargeRateLevel: 1,
       shotDamageLevel: 1,
