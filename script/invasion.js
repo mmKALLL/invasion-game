@@ -64,11 +64,19 @@
   // GAME LOOP //
   
   function update() {
-    gameStatus.timeSinceLastFire += 1;
-    gameStatus.gameFrame += 1;
-    if (gameStatus.energy < gameStatus.maxEnergy) {
-      gameStatus.energy = Math.min(gameStatus.maxEnergy, gameStatus.energy + gameStatus.energyChargeRate);
+    if (gameStatus.state == "ingame") {
+      gameStatus.timeSinceLastFire += 1;
+      gameStatus.gameFrame += 1;
+      if (gameStatus.energy < gameStatus.maxEnergy) {
+        gameStatus.energy = Math.min(gameStatus.maxEnergy, gameStatus.energy + gameStatus.energyChargeRate);
+      }
+      gameStatus.enemySpawnCounter += gameStatus.enemySpawnSpeed;
+      if (gameStatus.enemySpawnCounter >= 1.0) {
+        gameStatus.enemySpawnCounter -= 1.0;
+        spawnEnemy();
+      }
     }
+    
     var i;
     for (i = 0; i < activeShots.length; i += 1) {
       activeShots[i].activeSince += 1;
@@ -91,8 +99,26 @@
     
   }
   
+  // collision checks
   function checkShotTargets(shot) {
     // TODO
+  }
+  
+  // wave completion
+  function handleWaveClear() {
+    var gs = gameStatus;
+    gs.enemySpawnCounter = 0.0;
+    gs.wave += 1;
+    gs.waveEnemiesLeft = gs.newWaveEnemies();
+    activeShots = [];
+    activeEnemies = [];
+    gs.state = "levelup";
+    gameStatus = gs;
+  }
+  
+  function spawnEnemy() {
+    // TODO
+    console.log("spawn enemy");
   }
   
   
@@ -150,10 +176,6 @@
     }
   }
   
-  function drawActiveShots() {
-    
-  }
-  
   function drawActiveEnemies() {
     var i;
     for (i = 0; i < activeEnemies.length; i += 1) {
@@ -204,21 +226,15 @@
     
   function drawIngame() {
     
+    // background
     drawBackground();
     
     // objects (characters, enemies, etc)
     drawBlobIdle();
-
-    // Center marker
-    //ctx.beginPath();
-    //ctx.rect(320, 320, 10, 10);
-    //ctx.fillStyle = "#FF0000";
-    //ctx.fill();
-    //ctx.closePath();
+    drawActiveEnemies();
     
     // foreground (particle effects, etc)
     drawActiveShots();
-    drawActiveEnemies();
   }
   
   
@@ -319,6 +335,8 @@
     loadImage("blob_s1.png");
     loadImage("blob_s2.png");
     loadImage("beam1.png");
+    loadImage("enemy.png");
+    loadImage("boss.png");
     loadImage("titleimage.png");
     loadImage("playbutton.png");
     
@@ -373,9 +391,10 @@
       
       // game progression and level up increases
       wave: 1,
-      waveEnemiesLeft: 8,
-      newWaveEnemies: function() {},
-      enemySpawnSpeed: HARD_MODE ? 0.002 : 0.001,
+      firstWaveEnemies: 8,
+      enemySpawnCounter: 0.0,
+      get newWaveEnemies() { return 8 + (this.wave - 1) * (HARD_MODE ? 3 : 2); },
+      get enemySpawnSpeed() { return 0.005 + this.wave * HARD_MODE ? 0.002 : 0.001; },
       
       energyChargeRateLevel: 1,
       shotDamageLevel: 1,
