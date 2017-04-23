@@ -66,8 +66,8 @@
   function update() {
     gameStatus.timeSinceLastFire += 1;
     gameStatus.gameFrame += 1;
-    if (gameStatus.energy <= gameStatus.maxEnergy) {
-      gameStatus.energy += gameStatus.energyChargeRate;
+    if (gameStatus.energy < gameStatus.maxEnergy) {
+      gameStatus.energy = Math.min(gameStatus.maxEnergy, gameStatus.energy + gameStatus.energyChargeRate);
     }
     var i;
     for (i = 0; i < activeShots.length; i += 1) {
@@ -380,7 +380,7 @@
       energyChargeRateLevel: 1,
       shotDamageLevel: 1,
       planetMaxHPLevel: 1,
-      energyChargeRatePerLevel: HARD_MODE ? 0.05 : 0.10,
+      energyChargeRatePerLevel: HARD_MODE ? 0.10 : 0.25,
       shotDamagePerLevel: HARD_MODE ? 5 : 10,
       planetMaxHPPerLevel: HARD_MODE ? 80 : 150,
     };
