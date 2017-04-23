@@ -35,12 +35,12 @@
   var BG_SPIN_SPEED = 0.03;
   var RANDOM_LASERSHOT_SOUND = true;
   
-  var mouseDown = 0;
+  var mouseButtonDown = 0;
   document.body.onmousedown = function() {
-    ++mouseDown;
+    ++mouseButtonDown;
   };
   document.body.onmouseup = function() {
-    --mouseDown;
+    --mouseButtonDown;
   };
   
   var gameStatus = {
@@ -78,9 +78,6 @@
       }
     }
     
-    if (mouseDown) {
-      handleMouseHold();
-    }
   }
   
   function checkShotTargets(shot) {
@@ -197,8 +194,10 @@
     }
   }
   
-  function handleMouseHold(event) {
-    handleMouseClick(event);
+  function handleMouseMove(event) {
+    if (mouseButtonDown) {
+      handleMouseClick(event);
+    }
   }
   
   function startGame() {
@@ -247,7 +246,7 @@
     gameStatus.state = "ingame";
     
     window.addEventListener("click", handleMouseClick);
-    window.addEventListener("mousehold", handleMouseHold);
+    window.addEventListener("mousemove", handleMouseMove);
     
     gameStatus.ready = true;
     
