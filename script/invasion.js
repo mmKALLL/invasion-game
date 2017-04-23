@@ -125,6 +125,7 @@
       // if inside planet
       if (enemy.x > 325-65 && enemy.x < 325+65 && enemy.y > 325-65 && enemy.y < 325+65) {
         gameStatus.planetHP -= enemy.damage;
+        console.log("planet current HP: " + gameStatus.planetHP);
         activeEnemies = activeEnemies.slice(0, i).concat(activeEnemies.slice(i + 1, activeEnemies.length));
         i -= 1;
       }
@@ -154,6 +155,7 @@
     console.log("selection: " + selection + ", shotDamageLevel: " + gameStatus.shotDamageLevel +
         ", e-chargeLevel: " + gameStatus.energyChargeRateLevel + ", planetHPLevel: " + gameStatus.planetMaxHPLevel);
     gameStatus.planetHP = gameStatus.planetMaxHP;
+    gameStatus.state = "ingame";
   }
   
   function spawnEnemy() {
@@ -164,8 +166,8 @@
       damage: gameStatus.enemyDamage,
       HP: gameStatus.enemyDefaultHP,
       speed: gameStatus.enemySpeed,
-      x: ((side == 0 || side == 2) ? Math.random()*700 - 25 : (side == 1 ? 675 : -25)),
-      y: ((side == 1 || side == 3) ? Math.random()*700 - 25 : (side == 2 ? 675 : -25)),
+      x: ((side == 0 || side == 2) ? Math.random()*800 - 50 : (side == 1 ? 750 : -100)),
+      y: ((side == 1 || side == 3) ? Math.random()*800 - 50 : (side == 2 ? 750 : -100)),
     });
     console.log("spawn enemy");
   }
@@ -237,9 +239,10 @@
             activeEnemies[i].y - activeEnemies[i].image.height / 2,
             gameStatus.gameFrame % 360);
       } else if (activeEnemies[i].animationStyle === "planetcentered") {
+        var angle = Math.atan2(activeEnemies[i].y - 325, activeEnemies[i].x - 325);
         drawRotated(activeEnemies[i].image,
-            activeEnemies[i].x - activeEnemies[i].image.width / 2,
-            activeEnemies[i].y - activeEnemies[i].image.height / 2,
+            activeEnemies[i].x - (activeEnemies[i].image.width / 2 * Math.sin(angle)),
+            activeEnemies[i].y - (activeEnemies[i].image.height / 2 * Math.cos(angle)),
             -90 + 180/Math.PI * Math.atan2(325 - activeEnemies[i].y, activeEnemies[i].x - 325));
       } else {
         drawImage(activeEnemies[i].image,
@@ -334,11 +337,12 @@
   
   // Mouse event handler. Shoot things if ingame, otherwise control menus.
   function handleMouseClick(event) {
+    var canvasPosition = canvas.getBoundingClientRect();
+    
     if (gameStatus.state === "mainmenu") {
       gameStatus.state = "ingame";
     }
     else if (gameStatus.state === "ingame" && gameStatus.readyToFire) {
-      var canvasPosition = canvas.getBoundingClientRect();
       activeShots.push({
         originX: 325,
         originY: 325 - 66,
@@ -364,7 +368,10 @@
       gameStatus.energy = 0;
     }
     else if (gameStatus.state === "levelup") {
-      // TODO
+      // TODO: Crude click area check; try better.
+      if (event.clientY - canvasPosition.top > 350 && event.clientY - canvasPosition.top < 550) {
+        handleLevelUp(Math.floor((event.clientX - canvasPosition.left) / 218));
+      }
     }
   }
   
@@ -457,6 +464,7 @@
       enemySpawnCounter: 0.0,
       get newWaveEnemies() { return (8 + (this.wave - 1) * (HARD_MODE ? 3 : 2)); },
       get enemySpawnSpeed() { return (0.005 + (this.wave * (HARD_MODE ? 0.002 : 0.001))); },
+      get enemyDamage() { return (80 + (this.wave * (HARD_MODE ? 20 : 10))); },
       get enemyDefaultHP() { return (80 + (this.wave * (HARD_MODE ? 20 : 10))); },
       get enemySpeed() { return (0.8 + (this.wave * (HARD_MODE ? 0.3 : 0.2))) ; },
       
