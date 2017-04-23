@@ -26,12 +26,18 @@
   /* CONSTANTS */
   var IMAGE_PATH = "img/";
   var FPS = 60;
+  var SHOT_ACTIVE_FRAMES = 1;
+  var SHOT_VISUAL_FRAMES = 60;
+  var SHOT_COOLDOWN = 10; //TODO: Unused.
+  var SHOT_DAMAGE = 100;
+  var PLANET_MAX_HP = 1000;
   
   var gameStatus = {
     ready: false,
     get isReady() { return this.ready; },
     
   };
+  var activeShots = [];
   
   var canvas = document.getElementById("gameCanvas");
   var ctx = canvas.getContext("2d");
@@ -47,7 +53,7 @@
     
     function drawRotated(img, x, y, degrees) {
       ctx.translate(x, y);
-      ctx.rotate(-(1+degrees)/360 * 2 * Math.PI); // FIXME: TODO: Remove 1+
+      ctx.rotate(-(degrees)/360 * 2 * Math.PI);
       ctx.drawImage(img, 0, 0);
       ctx.rotate(degrees/360 * 2 * Math.PI);
       ctx.translate(-x, -y);
@@ -60,8 +66,8 @@
     ctx.fill();
     ctx.closePath();
 
-    ctx.drawImage(images.space_big, 0, 0);
-    ctx.drawImage(images.planet, 650 / 2 - 65, 650 / 2 - 65);
+    ctx.drawImage(images.space_big, -50, -50);
+    ctx.drawImage(images.planet, 650 / 2 - 100, 650 / 2 - 100);
     
     
     // objects (characters, enemies, etc)
@@ -97,21 +103,31 @@
     }
   }
   
+  function handleClick(event) {
+    if (gameStatus.state === "ingame" && gameStatus.readyToFire) {
+      activeShots.push({
+        originX: 325,
+        originY: 325,
+        targetX: event.clientX,
+        targetY: event.clientY,
+        activeSince: 0,
+        damage: SHOT_DAMAGE,
+        visibleUntil: SHOT_VISUAL_FRAMES,
+      });
+    }
+  }
+  
   function startGame() {
     // First some preparations:
     
     // Load images
-    (function () {
-      loadImage("planet.png");
-      loadImage("space_big.png");
-      loadImage("blob_s1.png");
-      loadImage("blob_s2.png");
-      loadImage("beam1.png");
-    })();
+    loadImage("planet.png");
+    loadImage("space_big.png");
+    loadImage("blob_s1.png");
+    loadImage("blob_s2.png");
+    loadImage("beam1.png");
 
-    
     function checkAssets() {
-      console.log("hi" + images);
       if (gameStatus.ready) {
         var key;
         for (key in images) {
@@ -131,6 +147,10 @@
     
     // Set up the game logic
     gameStatus.player = {}; // TODO
+    gameStatus.readyToFire = true;
+    gameStatus.state = "ingame";
+    
+    window.addEventListener("click", handleClick);
     
     gameStatus.ready = true;
     
