@@ -24,18 +24,20 @@
 (function () {
   
   /* CONSTANTS */
+  var CONSOLE_DEBUG = true;
   var IMAGE_PATH = "img/";
   var SOUND_PATH = "sound/";
   var FPS = 60;
   var SHOT_ACTIVE_FRAMES = 1;
   var SHOT_VISUAL_FRAMES = 65;
-  var SHOT_COOLDOWN = 5;
+  var SHOT_COOLDOWN = 0;
   var SHOT_DAMAGE = 100;
   var PLANET_MAX_HP = 1000;
   var BG_SPIN_SPEED = 0.03;
   var RANDOM_LASERSHOT_SOUND = true;
   
   var mouseButtonDown = 0;
+  var mouseLastX = 0, mouseLastY = 0;
   document.body.onmousedown = function() {
     ++mouseButtonDown;
   };
@@ -78,6 +80,13 @@
       }
     }
     
+    if (mouseButtonDown) {
+      handleMouseClick({
+        clientX: mouseLastX,
+        clientY: mouseLastY,
+      });
+    }
+    
   }
   
   function checkShotTargets(shot) {
@@ -109,7 +118,7 @@
     
     
     // objects (characters, enemies, etc)
-    ctx.drawImage(images.blob_s1, 650 / 2 - 65, 650 / 2 - 65 - images.blob_s1.height);
+    ctx.drawImage(images.blob_s1, 650 / 2 - images.blob_s1.width / 2, 650 / 2 - images.blob_s1.height / 2);
 
     // Center marker
     ctx.beginPath();
@@ -186,18 +195,18 @@
       });
       
       if (RANDOM_LASERSHOT_SOUND) {
-        sounds["lasershot" + (Math.floor(Math.random() * 4) + 1)].play();
+        console.log("lasershot" + (Math.floor(Math.random() * 4) + 1));
+        sounds["lasershot" + (Math.floor(Math.random() * 4) + 1)].cloneNode(true).play();
       } else {
-        sounds.lasershot1.play();
+        sounds.lasershot1.cloneNode(true).play();
       }
       gameStatus.timeSinceLastFire = 0;
     }
   }
   
   function handleMouseMove(event) {
-    if (mouseButtonDown) {
-      handleMouseClick(event);
-    }
+    mouseLastX = event.clientX;
+    mouseLastY = event.clientY;
   }
   
   function startGame() {
