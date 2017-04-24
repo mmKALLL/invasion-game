@@ -45,8 +45,8 @@
   var gameStatus = {
     ready: false,
     get isReady() { return this.ready; },
-    sfxVolume: 0.37,
-    musicVolume: 0.37,
+    sfxVolume: 0.27,
+    musicVolume: 0.5,
     gameFrame: 0,
     state: "mainmenu",
     levelUpReady: false,
@@ -469,13 +469,13 @@
     loadSound("lasershot5.wav");
     loadSound("lasershot6.wav");
     
-    loadSound("invasion_ingame.wav");
-    sounds.invasion_ingame.volume = gameStatus.musicVolume;
-    sounds.invasion_ingame.addEventListener("ended", function () {
+    loadSound("invasion_music.mp3");
+    sounds.invasion_music.volume = gameStatus.musicVolume;
+    sounds.invasion_music.addEventListener("ended", function () {
       this.currentTime = 0;
       this.play();
     });
-    sounds.invasion_ingame.play();
+    sounds.invasion_music.play();
 
     function checkAssets() {
       if (gameStatus.ready) {
