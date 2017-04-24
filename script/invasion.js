@@ -80,22 +80,30 @@
       } else if (gameStatus.waveEnemiesLeft == 0 && activeEnemies.length == 0) {
         handleWaveClear();
       }
-    }
     
-    var i;
-    for (i = 0; i < activeShots.length; i += 1) {
-      activeShots[i].activeSince += 1;
-      // remove if old shot
-      if (activeShots[i].activeSince - activeShots[i].visibleUntil > 0 && activeShots[i].activeSince - activeShots[i].activeFrames > 0) {
-        activeShots = activeShots.slice(0, i).concat(activeShots.slice(i + 1, activeShots.length));
-      } else {
-        if (activeShots[i].activeSince - activeShots[i].activeFrames < 0) {
-          checkShotTargets(activeShots[i]);
+      var i;
+      for (i = 0; i < activeShots.length; i += 1) {
+        activeShots[i].activeSince += 1;
+        // remove if old shot
+        if (activeShots[i].activeSince - activeShots[i].visibleUntil > 0 && activeShots[i].activeSince - activeShots[i].activeFrames > 0) {
+          activeShots = activeShots.slice(0, i).concat(activeShots.slice(i + 1, activeShots.length));
+        } else {
+          if (activeShots[i].activeSince - activeShots[i].activeFrames < 0) {
+            checkShotTargets(activeShots[i]);
+          }
         }
       }
+      
+      moveEnemies();
+      if (gameStatus.planetHP <= 0) {
+        gameStatus.planetHP = 1000;
+        gameStatus.state = "gameover";
+        window.setTimeout(function () {
+          gameStatus.state = "mainmenu";
+          resetStatus();
+        }, 5000);
+      }
     }
-    
-    moveEnemies();
     
     if (mouseButtonDown) {
       handleMouseHold({
@@ -130,6 +138,7 @@
         i -= 1;
       }
     }
+    
   }
   
   // wave completion
@@ -185,6 +194,8 @@
       drawPauseScreen();
     } else if (gameStatus.state === "levelup") {
       drawLevelup();
+    } else if (gameStatus.state === "gameover") {
+      drawGameOver();
     }
   }
   
@@ -195,6 +206,21 @@
   
   function drawPauseScreen() {
     // TODO
+  }
+  
+  function drawGameOver() {
+    if (ctx.globalAlpha == 1) {
+      ctx.save();
+      ctx.globalAlpha = 0.01;
+    }
+    if (ctx.globalAlpha < 0.98) {
+      ctx.globalAlpha += 0.01;
+    }
+    ctx.beginPath();
+    ctx.rect(0, 0, 2000, 2000);
+    ctx.fillStyle = "#FF0C0C";
+    ctx.fill();
+    ctx.closePath();
   }
   
   function drawLevelup() {
@@ -438,6 +464,25 @@
     }
     
     // Set up the game logic
+    resetStatus();
+    
+    window.addEventListener("click", handleMouseClick);
+    window.addEventListener("mousemove", handleMouseMove);
+    
+    gameStatus.ready = true;
+    
+    // Check that the assets are ready and launch the game
+    var intervalID = window.setInterval(function () {
+      checkAssets();
+    }, 200);
+
+    
+  }
+  
+  function resetStatus() {
+    ctx.restore();
+    activeShots = [];
+    activeEnemies = [];
     gameStatus = {
       ready: false,
       get isReady() { return this.ready; },
@@ -463,9 +508,9 @@
       waveEnemiesLeft: 8,
       enemySpawnCounter: 0.0,
       get newWaveEnemies() { return (8 + (this.wave - 1) * (HARD_MODE ? 3 : 2)); },
-      get enemySpawnSpeed() { return (0.005 + (this.wave * (HARD_MODE ? 0.002 : 0.001))); },
-      get enemyDamage() { return (80 + (this.wave * (HARD_MODE ? 20 : 10))); },
-      get enemyDefaultHP() { return (80 + (this.wave * (HARD_MODE ? 20 : 10))); },
+      get enemySpawnSpeed() { return (0.010 + (this.wave * (HARD_MODE ? 0.005 : 0.003))); },
+      get enemyDamage() { return (150 + (this.wave * (HARD_MODE ? 40 : 20))); },
+      get enemyDefaultHP() { return (60 + (this.wave * (HARD_MODE ? 20 : 10))); },
       get enemySpeed() { return (0.8 + (this.wave * (HARD_MODE ? 0.3 : 0.2))) ; },
       
       energyChargeRateLevel: 1,
@@ -477,18 +522,8 @@
     };
     
     gameStatus.state = "mainmenu";
-    
-    window.addEventListener("click", handleMouseClick);
-    window.addEventListener("mousemove", handleMouseMove);
-    
     gameStatus.ready = true;
-    
-    // Check that the assets are ready and launch the game
-    var intervalID = window.setInterval(function () {
-      checkAssets();
-    }, 200);
-
-    
   }
+  
   
 })();
