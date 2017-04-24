@@ -126,8 +126,10 @@
       var shotAngle = Math.atan2(shot.originY - shot.targetY, shot.originX - shot.targetX);
       console.log(shot.originY - shot.targetY, shot.originX - shot.targetX, (325 - 66) - enemy.y, 325 - enemy.x);
       console.log(enemyAngle, shotAngle, enemyAngle/shotAngle);
+      console.log(enemy.HP, shot.damage);
       
-      if (enemyAngle / shotAngle > 0.91 && enemyAngle / shotAngle < 1.1) {
+      var margin = 0.12 + (shot.damage * 1.5 / 10000.0);
+      if (enemyAngle / shotAngle > (1.0 - margin) && enemyAngle / shotAngle < (1.0 / (1.0 - margin))) {
         enemy.HP -= shot.damage;
       }
     }
@@ -290,19 +292,16 @@
       } else if (activeEnemies[i].animationStyle === "planetcentered") {
         var angle = Math.atan2(activeEnemies[i].y - 325, activeEnemies[i].x - 325);
         drawRotated(activeEnemies[i].image,
-            activeEnemies[i].x - (activeEnemies[i].image.width / 2 * Math.sin(angle)),
-            activeEnemies[i].y - (activeEnemies[i].image.height / 2 * Math.cos(angle)),
-            -90 + 180/Math.PI * Math.atan2(325 - activeEnemies[i].y, activeEnemies[i].x - 325));
+            activeEnemies[i].x,
+            activeEnemies[i].y,
+            -90 + 180/Math.PI * Math.atan2(325 - activeEnemies[i].y, activeEnemies[i].x - 325),
+            -activeEnemies[i].image.width / 2,
+            -activeEnemies[i].image.height / 2);
       } else {
         drawImage(activeEnemies[i].image,
             activeEnemies[i].x - activeEnemies[i].image.width / 2,
             activeEnemies[i].y - activeEnemies[i].image.height / 2);
       }
-      ctx.beginPath();
-      ctx.rect(activeEnemies[i].x - 5, activeEnemies[i].y - 5, 10, 10);
-      ctx.fillStyle = "#FF0C0C";
-      ctx.fill();
-      ctx.closePath();
       
       ctx.restore();
     }
@@ -317,7 +316,9 @@
         ctx.globalAlpha = 1 - (activeShots[i].activeSince * 1.0 / activeShots[i].visibleUntil);
       }
       var angle = Math.atan2(activeShots[i].originY - activeShots[i].targetY, activeShots[i].targetX - activeShots[i].originX);
-      drawRotated(activeShots[i].image, activeShots[i].originX - (13 * Math.sin(angle)), activeShots[i].originY - (13 * Math.cos(angle)),
+      drawRotated(activeShots[i].image,
+          activeShots[i].originX - (13 * Math.sin(angle)),
+          activeShots[i].originY - (13 * Math.cos(angle)),
           360*angle/(2*Math.PI),
           0, 0);
       ctx.restore();
@@ -541,7 +542,7 @@
       shotActiveFrames: 1,
       shotVisualFrames: 65,
       shotCooldown: 5,
-      get shotDamage() { return 150 + this.shotDamageLevel * this.shotDamagePerLevel; },
+      get shotDamage() { return 100 + this.shotDamageLevel * this.shotDamagePerLevel; },
       get planetMaxHP() { return 1000 + this.planetMaxHPLevel * this.planetMaxHPPerLevel; },
       planetHP: 1000,
       
@@ -550,17 +551,17 @@
       waveEnemiesLeft: 8,
       enemySpawnCounter: 0.0,
       get newWaveEnemies() { return (8 + (this.wave - 1) * (HARD_MODE ? 3 : 2)); },
-      get enemySpawnSpeed() { return (0.005 + (this.wave * (HARD_MODE ? 0.003 : 0.002))); },
+      get enemySpawnSpeed() { return (0.005 + (this.wave * (HARD_MODE ? 0.004 : 0.003))); },
       get enemyDamage() { return (100 + (this.wave * (HARD_MODE ? 40 : 20))); },
-      get enemyDefaultHP() { return (100 + (this.wave * (HARD_MODE ? 20 : 20))); },
+      get enemyDefaultHP() { return (90 + (this.wave * (HARD_MODE ? 5 : 0))); },
       get enemySpeed() { return (0.8 + (this.wave * (HARD_MODE ? 0.35 : 0.25))) ; },
       
       energyChargeRateLevel: 0,
       shotDamageLevel: 0,
       planetMaxHPLevel: 0,
-      energyChargeRatePerLevel: HARD_MODE ? 0.10 : 0.20,
-      shotDamagePerLevel: HARD_MODE ? 40 : 60,
-      planetMaxHPPerLevel: HARD_MODE ? 150 : 300,
+      energyChargeRatePerLevel: HARD_MODE ? 0.20 : 0.22,
+      shotDamagePerLevel: HARD_MODE ? 20 : 20,
+      planetMaxHPPerLevel: HARD_MODE ? 400 : 320,
     };
     
     gameStatus.state = "mainmenu";
