@@ -89,6 +89,7 @@
         // remove if old shot
         if (activeShots[i].activeSince - activeShots[i].visibleUntil > 0 && activeShots[i].activeSince - activeShots[i].activeFrames > 0) {
           activeShots = activeShots.slice(0, i).concat(activeShots.slice(i + 1, activeShots.length));
+          i -= 1;
         } else {
           if (activeShots[i].activeSince - activeShots[i].activeFrames <= 0) {
             checkShotTargets(activeShots[i]);
@@ -149,6 +150,7 @@
       if (enemy.HP <= 0) {
         activeEnemies = activeEnemies.slice(0, i).concat(activeEnemies.slice(i + 1, activeEnemies.length));
         i -= 1;
+        continue;
       }
       
       // if inside planet
@@ -157,6 +159,7 @@
         console.log("planet current HP: " + gameStatus.planetHP);
         activeEnemies = activeEnemies.slice(0, i).concat(activeEnemies.slice(i + 1, activeEnemies.length));
         i -= 1;
+        continue;
       }
     }
     
@@ -174,7 +177,7 @@
     window.setTimeout(function () {
       gs.levelUpReady = true;
     }, 1000);
-    console.log("wave " + gs.wave + " clear, should be levelup: " + gameStatus.state); // works fine
+    console.log("wave " + (gs.wave - 1) + " clear, should be levelup: " + gameStatus.state); // works fine
   }
   
   function handleLevelUp(selection) {
