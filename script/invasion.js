@@ -122,10 +122,12 @@
     for (i = 0; i < activeEnemies.length; i += 1) {
       var enemy = activeEnemies[i];
       
-      var enemyAngle = Math.atan2((325 - 66) - enemy.y, enemy.x - 325);
-      var shotAngle = Math.atan2(shot.originY - shot.targetY, shot.targetX - shot.originX);
+      var enemyAngle = Math.atan2(shot.originY - enemy.y, shot.originX - enemy.x);
+      var shotAngle = Math.atan2(shot.originY - shot.targetY, shot.originX - shot.targetX);
+      console.log(shot.originY - shot.targetY, shot.originX - shot.targetX, (325 - 66) - enemy.y, 325 - enemy.x);
+      console.log(enemyAngle, shotAngle, enemyAngle/shotAngle);
       
-      if (enemyAngle / shotAngle > 0.7 && enemyAngle / shotAngle < 1.6) {
+      if (enemyAngle / shotAngle > 0.91 && enemyAngle / shotAngle < 1.1) {
         enemy.HP -= shot.damage;
       }
     }
