@@ -88,7 +88,7 @@
         if (activeShots[i].activeSince - activeShots[i].visibleUntil > 0 && activeShots[i].activeSince - activeShots[i].activeFrames > 0) {
           activeShots = activeShots.slice(0, i).concat(activeShots.slice(i + 1, activeShots.length));
         } else {
-          if (activeShots[i].activeSince - activeShots[i].activeFrames < 0) {
+          if (activeShots[i].activeSince - activeShots[i].activeFrames <= 0) {
             checkShotTargets(activeShots[i]);
           }
         }
@@ -101,7 +101,7 @@
         window.setTimeout(function () {
           gameStatus.state = "mainmenu";
           resetStatus();
-        }, 5000);
+        }, 3500);
       }
     }
     
@@ -116,8 +116,17 @@
   
   // collision checks
   function checkShotTargets(shot) {
-    // TODO
-    // remove enemy from activeEnemies
+    var i;
+    for (i = 0; i < activeEnemies.length; i += 1) {
+      var enemy = activeEnemies[i];
+      
+      var enemyAngle = Math.atan2((325 - 66) - enemy.y, enemy.x - 325);
+      var shotAngle = Math.atan2(shot.originY - shot.targetY, shot.targetX - shot.originX);
+      
+      if (enemyAngle / shotAngle > 0.6 && enemyAngle / shotAngle < 1.7) {
+        enemy.HP -= shot.damage;
+      }
+    }
   }
   
   function moveEnemies() {
@@ -129,6 +138,12 @@
       var angle = Math.atan2(enemy.y - 325, enemy.x - 325);
       enemy.x -= enemy.speed * Math.cos(angle);
       enemy.y -= enemy.speed * Math.sin(angle);
+      
+      // if dead
+      if (enemy.HP <= 0) {
+        activeEnemies = activeEnemies.slice(0, i).concat(activeEnemies.slice(i + 1, activeEnemies.length));
+        i -= 1;
+      }
       
       // if inside planet
       if (enemy.x > 325-65 && enemy.x < 325+65 && enemy.y > 325-65 && enemy.y < 325+65) {
@@ -231,6 +246,7 @@
   function drawTitle() {
     ctx.drawImage(images.titleimage, 650 / 2 - images.titleimage.width / 2, 100);
     ctx.drawImage(images.playbutton, 650 / 2 - images.playbutton.width / 2, 500);
+    ctx.drawImage(images.hardmode, 650 / 2 - images.hardmode.width / 2, 650 - images.hardmode.height);
   }
   
   function drawBackground() {
@@ -366,6 +382,11 @@
     var canvasPosition = canvas.getBoundingClientRect();
     
     if (gameStatus.state === "mainmenu") {
+      if (event.clientX - canvasPosition.left > 325-120 && event.clientX - canvasPosition.left < 325+120 &&
+          event.clientY - canvasPosition.top > 650-25 && event.clientY - canvasPosition.top < 650) {
+        HARD_MODE = true;
+        console.log("hard mode activated");
+      }
       gameStatus.state = "ingame";
     }
     else if (gameStatus.state === "ingame" && gameStatus.readyToFire) {
@@ -433,6 +454,7 @@
     loadImage("titleimage.png");
     loadImage("levelup.png");
     loadImage("playbutton.png");
+    loadImage("hardmode.png");
     
     loadSound("lasershot1.wav");
     loadSound("lasershot2.wav");
@@ -440,6 +462,7 @@
     loadSound("lasershot4.wav");
     loadSound("lasershot5.wav");
     loadSound("lasershot6.wav");
+    loadSound("music.mp3");
 
     function checkAssets() {
       if (gameStatus.ready) {
@@ -495,11 +518,11 @@
       // player stats and shot properties
       energy: 100,
       maxEnergy: 100,
-      get energyChargeRate() { return 0.5 + this.energyChargeRatePerLevel * this.energyChargeRateLevel; },
+      get energyChargeRate() { return 0.8 + this.energyChargeRatePerLevel * this.energyChargeRateLevel; },
       shotActiveFrames: 1,
       shotVisualFrames: 65,
       shotCooldown: 5,
-      get shotDamage() { return 100 + this.shotDamageLevel * this.shotDamagePerLevel; },
+      get shotDamage() { return 150 + this.shotDamageLevel * this.shotDamagePerLevel; },
       get planetMaxHP() { return 1000 + this.planetMaxHPLevel * this.planetMaxHPPerLevel; },
       planetHP: 1000,
       
@@ -508,17 +531,17 @@
       waveEnemiesLeft: 8,
       enemySpawnCounter: 0.0,
       get newWaveEnemies() { return (8 + (this.wave - 1) * (HARD_MODE ? 3 : 2)); },
-      get enemySpawnSpeed() { return (0.010 + (this.wave * (HARD_MODE ? 0.005 : 0.003))); },
-      get enemyDamage() { return (150 + (this.wave * (HARD_MODE ? 40 : 20))); },
-      get enemyDefaultHP() { return (60 + (this.wave * (HARD_MODE ? 20 : 10))); },
-      get enemySpeed() { return (0.8 + (this.wave * (HARD_MODE ? 0.3 : 0.2))) ; },
+      get enemySpawnSpeed() { return (0.005 + (this.wave * (HARD_MODE ? 0.003 : 0.002))); },
+      get enemyDamage() { return (100 + (this.wave * (HARD_MODE ? 40 : 20))); },
+      get enemyDefaultHP() { return (60 + (this.wave * (HARD_MODE ? 30 : 20))); },
+      get enemySpeed() { return (0.8 + (this.wave * (HARD_MODE ? 0.35 : 0.25))) ; },
       
-      energyChargeRateLevel: 1,
-      shotDamageLevel: 1,
-      planetMaxHPLevel: 1,
-      energyChargeRatePerLevel: HARD_MODE ? 0.10 : 0.25,
-      shotDamagePerLevel: HARD_MODE ? 5 : 10,
-      planetMaxHPPerLevel: HARD_MODE ? 150 : 250,
+      energyChargeRateLevel: 0,
+      shotDamageLevel: 0,
+      planetMaxHPLevel: 0,
+      energyChargeRatePerLevel: HARD_MODE ? 0.10 : 0.20,
+      shotDamagePerLevel: HARD_MODE ? 40 : 60,
+      planetMaxHPPerLevel: HARD_MODE ? 150 : 300,
     };
     
     gameStatus.state = "mainmenu";
