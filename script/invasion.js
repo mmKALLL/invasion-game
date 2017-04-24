@@ -45,9 +45,11 @@
   var gameStatus = {
     ready: false,
     get isReady() { return this.ready; },
-    sfxVolume: 0.35,
+    sfxVolume: 0.37,
+    musicVolume: 0.37,
     gameFrame: 0,
     state: "mainmenu",
+    levelUpReady: false,
   };
   
   var activeShots = [];
@@ -123,7 +125,7 @@
       var enemyAngle = Math.atan2((325 - 66) - enemy.y, enemy.x - 325);
       var shotAngle = Math.atan2(shot.originY - shot.targetY, shot.targetX - shot.originX);
       
-      if (enemyAngle / shotAngle > 0.6 && enemyAngle / shotAngle < 1.7) {
+      if (enemyAngle / shotAngle > 0.7 && enemyAngle / shotAngle < 1.6) {
         enemy.HP -= shot.damage;
       }
     }
@@ -165,6 +167,9 @@
     activeShots = [];
     activeEnemies = [];
     gs.state = "levelup";
+    window.setTimeout(function () {
+      gs.levelUpReady = true;
+    }, 1000);
     console.log("wave " + gs.wave + " clear, should be levelup: " + gameStatus.state); // works fine
   }
   
@@ -176,6 +181,7 @@
     } else if (selection === 2) {
       gameStatus.planetMaxHPLevel += 1;
     }
+    gameStatus.levelUpReady = false;
     console.log("selection: " + selection + ", shotDamageLevel: " + gameStatus.shotDamageLevel +
         ", e-chargeLevel: " + gameStatus.energyChargeRateLevel + ", planetHPLevel: " + gameStatus.planetMaxHPLevel);
     gameStatus.planetHP = gameStatus.planetMaxHP;
@@ -414,7 +420,7 @@
       gameStatus.timeSinceLastFire = 0;
       gameStatus.energy = 0;
     }
-    else if (gameStatus.state === "levelup") {
+    else if (gameStatus.state === "levelup" && gameStatus.levelUpReady) {
       // TODO: Crude click area check; try better.
       if (event.clientY - canvasPosition.top > 350 && event.clientY - canvasPosition.top < 550) {
         handleLevelUp(Math.floor((event.clientX - canvasPosition.left) / 218));
@@ -462,7 +468,14 @@
     loadSound("lasershot4.wav");
     loadSound("lasershot5.wav");
     loadSound("lasershot6.wav");
-    loadSound("music.mp3");
+    
+    loadSound("invasion_ingame.wav");
+    sounds.invasion_ingame.volume = gameStatus.musicVolume;
+    sounds.invasion_ingame.addEventListener("ended", function () {
+      this.currentTime = 0;
+      this.play();
+    });
+    sounds.invasion_ingame.play();
 
     function checkAssets() {
       if (gameStatus.ready) {
