@@ -281,7 +281,6 @@
   function drawActiveEnemies() {
     var i;
     for (i = 0; i < activeEnemies.length; i += 1) {
-      //console.log(activeShots[i].targetY, activeShots[i].targetX);
       ctx.save();
       if (activeEnemies[i].animationStyle === "rotate") {
         drawRotated(activeEnemies[i].image,
@@ -299,7 +298,12 @@
             activeEnemies[i].x - activeEnemies[i].image.width / 2,
             activeEnemies[i].y - activeEnemies[i].image.height / 2);
       }
-
+      ctx.beginPath();
+      ctx.rect(activeEnemies[i].x - 5, activeEnemies[i].y - 5, 10, 10);
+      ctx.fillStyle = "#FF0C0C";
+      ctx.fill();
+      ctx.closePath();
+      
       ctx.restore();
     }
   }
@@ -548,7 +552,7 @@
       get newWaveEnemies() { return (8 + (this.wave - 1) * (HARD_MODE ? 3 : 2)); },
       get enemySpawnSpeed() { return (0.005 + (this.wave * (HARD_MODE ? 0.003 : 0.002))); },
       get enemyDamage() { return (100 + (this.wave * (HARD_MODE ? 40 : 20))); },
-      get enemyDefaultHP() { return (60 + (this.wave * (HARD_MODE ? 30 : 20))); },
+      get enemyDefaultHP() { return (100 + (this.wave * (HARD_MODE ? 20 : 20))); },
       get enemySpeed() { return (0.8 + (this.wave * (HARD_MODE ? 0.35 : 0.25))) ; },
       
       energyChargeRateLevel: 0,
