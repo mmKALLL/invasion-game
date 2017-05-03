@@ -130,24 +130,31 @@
       //console.log(enemyAngle, shotAngle, enemyAngle/shotAngle);
       //console.log(enemy.HP, shot.damage);
       
-      var margin = (0.12 + (shot.damage * 2.0 / 10000.0)) * (220 / (distance * 0.75 + 30));
+      var margin = (0.12 + (shot.damage * 2.0 / 10000.0)) * (220 / (distance * 0.70 + 30));
       if (Math.abs(shot.originY - enemy.y) < 15 + (Math.abs(shot.originX - enemy.x) + 100) / 30) {
         enemyAngle = Math.abs(enemyAngle);
         shotAngle = Math.abs(shotAngle);
       }
-      //// old collision detection
-      //if (enemyAngle / shotAngle > (1.0 - margin) && enemyAngle / shotAngle < (1.0 / (1.0 - margin))) {
-      //  enemy.HP -= shot.damage;
-      //}
+      // old collision detection
+      if (enemyAngle / shotAngle > (1.0 - margin) && enemyAngle / shotAngle < (1.0 / (1.0 - margin))) {
+        enemy.HP -= shot.damage;
+      }
       // second attempt; complements the tricky angles around ±0
       if (Math.abs(enemyAngle - shotAngle) * 180 / Math.PI < 10 * (1.0 + margin)) {
         enemy.HP -= shot.damage;
       }
       
-      // third attempt: true conelike perpendicular distance
-      var perpDist = Math.abs((shot.targetY - shot.originY) * enemy.x - (shot.targetX - shot.originX) * enemy.y + shot.targetX * shot.targetY - shot.targetY * shot.targetX)
-                      / Math.sqrt(Math.pow((shot.targetY - shot.originY), 2) + Math.pow((shot.targetX - shot.originX), 2));
-      
+      // third attempt: true conelike perpendicular distance; TODO: perpDist doesn't work.
+      //var perpDist = Math.abs((shot.targetY - shot.originY) * enemy.x - (shot.targetX - shot.originX) * enemy.y + shot.targetX * shot.targetY - shot.targetY * shot.targetX)
+      //                / Math.sqrt(Math.pow((shot.targetY - shot.originY), 2) + Math.pow((shot.targetX - shot.originX), 2));
+      //// check perpDist if rough direction is right
+      //if (Math.abs(enemyAngle - shotAngle) * 180 / Math.PI < 50
+      //      || (distance < 70 && Math.abs(enemyAngle - shotAngle) * 180 / Math.PI < 90)) {
+      //  console.log(perpDist);
+      //  if (perpDist < 20) {
+      //    enemy.HP -= shot.damage;
+      //  }
+      //}
     }
   }
   
@@ -577,8 +584,8 @@
       energyChargeRateLevel: 0,
       shotDamageLevel: 0,
       planetMaxHPLevel: 0,
-      energyChargeRatePerLevel: HARD_MODE ? 0.20 : 0.30,
-      shotDamagePerLevel: HARD_MODE ? 20 : 40,
+      energyChargeRatePerLevel: HARD_MODE ? 0.20 : 0.31,
+      shotDamagePerLevel: HARD_MODE ? 20 : 50,
       planetMaxHPPerLevel: HARD_MODE ? 400 : 350,
     };
     
