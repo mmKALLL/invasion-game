@@ -125,14 +125,29 @@
       
       var enemyAngle = Math.atan2(shot.originY - enemy.y, shot.originX - enemy.x);
       var shotAngle = Math.atan2(shot.originY - shot.targetY, shot.originX - shot.targetX);
-      console.log(shot.originY - shot.targetY, shot.originX - shot.targetX, (325 - 66) - enemy.y, 325 - enemy.x);
-      console.log(enemyAngle, shotAngle, enemyAngle/shotAngle);
-      console.log(enemy.HP, shot.damage);
+      var distance = Math.sqrt(Math.pow(Math.abs(shot.originX - enemy.x), 2) + Math.pow(Math.abs(shot.originY - enemy.y), 2));
+      //console.log(shot.originY - shot.targetY, shot.originX - shot.targetX, (325 - 66) - enemy.y, 325 - enemy.x);
+      //console.log(enemyAngle, shotAngle, enemyAngle/shotAngle);
+      //console.log(enemy.HP, shot.damage);
       
-      var margin = 0.12 + (shot.damage * 1.5 / 10000.0);
-      if (enemyAngle / shotAngle > (1.0 - margin) && enemyAngle / shotAngle < (1.0 / (1.0 - margin))) {
+      var margin = (0.12 + (shot.damage * 2.0 / 10000.0)) * (220 / (distance * 0.75 + 30));
+      if (Math.abs(shot.originY - enemy.y) < 15 + (Math.abs(shot.originX - enemy.x) + 100) / 30) {
+        enemyAngle = Math.abs(enemyAngle);
+        shotAngle = Math.abs(shotAngle);
+      }
+      //// old collision detection
+      //if (enemyAngle / shotAngle > (1.0 - margin) && enemyAngle / shotAngle < (1.0 / (1.0 - margin))) {
+      //  enemy.HP -= shot.damage;
+      //}
+      // second attempt; complements the tricky angles around ±0
+      if (Math.abs(enemyAngle - shotAngle) * 180 / Math.PI < 10 * (1.0 + margin)) {
         enemy.HP -= shot.damage;
       }
+      
+      // third attempt: true conelike perpendicular distance
+      var perpDist = Math.abs((shot.targetY - shot.originY) * enemy.x - (shot.targetX - shot.originX) * enemy.y + shot.targetX * shot.targetY - shot.targetY * shot.targetX)
+                      / Math.sqrt(Math.pow((shot.targetY - shot.originY), 2) + Math.pow((shot.targetX - shot.originX), 2));
+      
     }
   }
   
@@ -541,7 +556,7 @@
       // player stats and shot properties
       energy: 100,
       maxEnergy: 100,
-      get energyChargeRate() { return 0.8 + this.energyChargeRatePerLevel * this.energyChargeRateLevel; },
+      get energyChargeRate() { return 0.9 + this.energyChargeRatePerLevel * this.energyChargeRateLevel; },
       shotActiveFrames: 1,
       shotVisualFrames: 65,
       shotCooldown: 5,
@@ -553,18 +568,18 @@
       wave: 1,
       waveEnemiesLeft: 8,
       enemySpawnCounter: 0.0,
-      get newWaveEnemies() { return (8 + (this.wave - 1) * (HARD_MODE ? 3 : 2)); },
-      get enemySpawnSpeed() { return (0.005 + (this.wave * (HARD_MODE ? 0.004 : 0.003))); },
+      get newWaveEnemies() { return (6 + this.wave * (HARD_MODE ? 3 : 2)); },
+      get enemySpawnSpeed() { return (0.006 + (this.wave * (HARD_MODE ? 0.004 : 0.0028))); },
       get enemyDamage() { return (100 + (this.wave * (HARD_MODE ? 40 : 20))); },
-      get enemyDefaultHP() { return (90 + (this.wave * (HARD_MODE ? 5 : 0))); },
-      get enemySpeed() { return (0.8 + (this.wave * (HARD_MODE ? 0.35 : 0.25))) ; },
+      get enemyDefaultHP() { return (90 + (this.wave * (HARD_MODE ? 0 : 0))); }, // changing will break collision detection
+      get enemySpeed() { return (0.8 + (this.wave * (HARD_MODE ? 0.35 : 0.26))) ; },
       
       energyChargeRateLevel: 0,
       shotDamageLevel: 0,
       planetMaxHPLevel: 0,
-      energyChargeRatePerLevel: HARD_MODE ? 0.20 : 0.22,
-      shotDamagePerLevel: HARD_MODE ? 20 : 20,
-      planetMaxHPPerLevel: HARD_MODE ? 400 : 320,
+      energyChargeRatePerLevel: HARD_MODE ? 0.20 : 0.30,
+      shotDamagePerLevel: HARD_MODE ? 20 : 40,
+      planetMaxHPPerLevel: HARD_MODE ? 400 : 350,
     };
     
     gameStatus.state = "mainmenu";
