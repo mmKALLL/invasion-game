@@ -45,7 +45,7 @@
   var gameStatus = {
     ready: false,
     get isReady() { return this.ready; },
-    sfxVolume: 0.27,
+    sfxVolume: 0.22,
     musicVolume: 0.5,
     gameFrame: 0,
     state: "mainmenu",
